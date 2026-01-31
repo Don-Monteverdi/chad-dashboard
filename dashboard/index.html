@@ -1,0 +1,1078 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chad Dashboard v1</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #21262d;
+            --border-color: #30363d;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --accent-blue: #58a6ff;
+            --accent-green: #3fb950;
+            --accent-yellow: #d29922;
+            --accent-red: #f85149;
+            --accent-purple: #a371f7;
+            --accent-cyan: #39c5cf;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 24px;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .avatar-container {
+            position: relative;
+            width: 56px;
+            height: 56px;
+        }
+
+        .avatar {
+            font-size: 40px;
+            line-height: 56px;
+            text-align: center;
+            animation: pulse 2s ease-in-out infinite;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .avatar:hover {
+            transform: scale(1.1);
+        }
+
+        .avatar-status {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: var(--accent-green);
+            border: 2px solid var(--bg-secondary);
+            animation: statusPulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes statusPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .header-title h1 {
+            font-size: 24px;
+            font-weight: 600;
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-title p {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: var(--bg-tertiary);
+            border-radius: 20px;
+            font-size: 13px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent-green);
+            animation: statusPulse 2s infinite;
+        }
+
+        .time-display {
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        /* Main Grid */
+        .dashboard {
+            display: grid;
+            grid-template-columns: 320px 1fr 300px;
+            grid-template-rows: auto 1fr;
+            gap: 20px;
+            padding: 20px;
+            min-height: calc(100vh - 89px);
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .card-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .card-title-icon {
+            font-size: 16px;
+        }
+
+        .card-badge {
+            background: var(--bg-tertiary);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .card-content {
+            padding: 16px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .card-content::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .card-content::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .card-content::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 3px;
+        }
+
+        /* Activity Feed */
+        .activity-feed {
+            grid-row: span 2;
+        }
+
+        .activity-item {
+            display: flex;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .activity-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .activity-icon.task { background: rgba(88, 166, 255, 0.15); }
+        .activity-icon.agent { background: rgba(163, 113, 247, 0.15); }
+        .activity-icon.complete { background: rgba(63, 185, 80, 0.15); }
+        .activity-icon.error { background: rgba(248, 81, 73, 0.15); }
+
+        .activity-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .activity-text {
+            font-size: 13px;
+            line-height: 1.5;
+            color: var(--text-primary);
+        }
+
+        .activity-text strong {
+            color: var(--accent-blue);
+        }
+
+        .activity-time {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        /* Kanban Board */
+        .kanban {
+            grid-column: span 2;
+        }
+
+        .kanban-board {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            padding: 0;
+        }
+
+        .kanban-column {
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            min-height: 300px;
+        }
+
+        .kanban-column-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .kanban-column-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .column-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .column-dot.backlog { background: var(--text-secondary); }
+        .column-dot.progress { background: var(--accent-blue); }
+        .column-dot.review { background: var(--accent-yellow); }
+        .column-dot.done { background: var(--accent-green); }
+
+        .kanban-column-count {
+            font-size: 11px;
+            color: var(--text-secondary);
+            background: var(--bg-secondary);
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+
+        .kanban-cards {
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .kanban-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 12px;
+            cursor: grab;
+            transition: all 0.2s;
+        }
+
+        .kanban-card:hover {
+            border-color: var(--accent-blue);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .kanban-card-title {
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .kanban-card-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .kanban-card-tag {
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            background: rgba(88, 166, 255, 0.15);
+            color: var(--accent-blue);
+        }
+
+        .kanban-card-priority {
+            font-size: 12px;
+        }
+
+        /* Cost Tracking */
+        .cost-tracking {
+            grid-column: 3;
+        }
+
+        .cost-stat {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .cost-stat:last-child {
+            border-bottom: none;
+        }
+
+        .cost-label {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .cost-value {
+            font-family: 'SF Mono', Monaco, monospace;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .cost-value.highlight {
+            color: var(--accent-green);
+        }
+
+        .usage-bar {
+            margin-top: 16px;
+        }
+
+        .usage-bar-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            margin-bottom: 6px;
+        }
+
+        .usage-bar-track {
+            height: 8px;
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .usage-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        /* Skills Status */
+        .skills-status {
+            grid-column: 3;
+        }
+
+        .skill-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .skill-item:last-child {
+            border-bottom: none;
+        }
+
+        .skill-icon {
+            font-size: 20px;
+        }
+
+        .skill-info {
+            flex: 1;
+        }
+
+        .skill-name {
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .skill-desc {
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        .skill-status {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .skill-status.online { background: var(--accent-green); }
+        .skill-status.offline { background: var(--accent-red); }
+        .skill-status.loading { background: var(--accent-yellow); animation: statusPulse 1s infinite; }
+
+        /* Hot Topics */
+        .hot-topics {
+            grid-column: 1;
+        }
+
+        .topic-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .topic-item:last-child {
+            border-bottom: none;
+        }
+
+        .topic-rank {
+            width: 24px;
+            height: 24px;
+            background: var(--bg-tertiary);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .topic-rank.hot {
+            background: linear-gradient(135deg, var(--accent-red), var(--accent-yellow));
+            color: white;
+        }
+
+        .topic-content {
+            flex: 1;
+        }
+
+        .topic-title {
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .topic-meta {
+            display: flex;
+            gap: 12px;
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        .topic-trend {
+            color: var(--accent-green);
+        }
+
+        .topic-trend.down {
+            color: var(--accent-red);
+        }
+
+        /* Sub-agents Panel */
+        .subagents {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .subagent-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px;
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+
+        .subagent-avatar {
+            font-size: 20px;
+        }
+
+        .subagent-info {
+            flex: 1;
+        }
+
+        .subagent-name {
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .subagent-task {
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        .subagent-status {
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            background: rgba(63, 185, 80, 0.15);
+            color: var(--accent-green);
+        }
+
+        .subagent-status.working {
+            background: rgba(88, 166, 255, 0.15);
+            color: var(--accent-blue);
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            .activity-feed, .kanban, .cost-tracking, .skills-status, .hot-topics {
+                grid-column: 1;
+                grid-row: auto;
+            }
+            .kanban-board {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .kanban-board {
+                grid-template-columns: 1fr;
+            }
+            .header {
+                flex-direction: column;
+                gap: 12px;
+            }
+        }
+
+        /* Animations for avatar moods */
+        .avatar.thinking {
+            animation: thinking 1s ease-in-out infinite;
+        }
+
+        .avatar.working {
+            animation: working 0.5s ease-in-out infinite;
+        }
+
+        .avatar.celebrating {
+            animation: celebrating 0.3s ease-in-out infinite;
+        }
+
+        @keyframes thinking {
+            0%, 100% { transform: rotate(-5deg); }
+            50% { transform: rotate(5deg); }
+        }
+
+        @keyframes working {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        @keyframes celebrating {
+            0%, 100% { transform: rotate(-10deg) scale(1.1); }
+            50% { transform: rotate(10deg) scale(1.2); }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-left">
+            <div class="avatar-container">
+                <div class="avatar" id="chadAvatar" title="Click to change mood!">🤖</div>
+                <div class="avatar-status"></div>
+            </div>
+            <div class="header-title">
+                <h1>Chad Dashboard v1</h1>
+                <p>OpenClaw Agent Command Center</p>
+            </div>
+        </div>
+        <div class="header-right">
+            <div class="status-badge">
+                <div class="status-dot"></div>
+                <span id="currentTask">Monitoring...</span>
+            </div>
+            <div class="time-display" id="timeDisplay">--:--:--</div>
+        </div>
+    </header>
+
+    <main class="dashboard">
+        <!-- Activity Feed -->
+        <section class="card activity-feed">
+            <div class="card-header">
+                <div class="card-title">
+                    <span class="card-title-icon">📡</span>
+                    Live Activity
+                </div>
+                <span class="card-badge" id="activityCount">0 events</span>
+            </div>
+            <div class="card-content" id="activityFeed">
+                <!-- Activity items injected here -->
+            </div>
+            
+            <div class="subagents">
+                <div class="card-title" style="padding: 0 16px 12px;">
+                    <span class="card-title-icon">🤖</span>
+                    Sub-Agents
+                </div>
+                <div id="subagentsList" style="padding: 0 16px 16px;">
+                    <!-- Sub-agents injected here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Kanban Board -->
+        <section class="card kanban">
+            <div class="card-header">
+                <div class="card-title">
+                    <span class="card-title-icon">📋</span>
+                    Task Board
+                </div>
+                <span class="card-badge" id="totalTasks">0 tasks</span>
+            </div>
+            <div class="card-content" style="max-height: none; overflow: visible;">
+                <div class="kanban-board">
+                    <div class="kanban-column" id="backlog">
+                        <div class="kanban-column-header">
+                            <div class="kanban-column-title">
+                                <span class="column-dot backlog"></span>
+                                Backlog
+                            </div>
+                            <span class="kanban-column-count">0</span>
+                        </div>
+                        <div class="kanban-cards"></div>
+                    </div>
+                    <div class="kanban-column" id="inProgress">
+                        <div class="kanban-column-header">
+                            <div class="kanban-column-title">
+                                <span class="column-dot progress"></span>
+                                In Progress
+                            </div>
+                            <span class="kanban-column-count">0</span>
+                        </div>
+                        <div class="kanban-cards"></div>
+                    </div>
+                    <div class="kanban-column" id="review">
+                        <div class="kanban-column-header">
+                            <div class="kanban-column-title">
+                                <span class="column-dot review"></span>
+                                Review
+                            </div>
+                            <span class="kanban-column-count">0</span>
+                        </div>
+                        <div class="kanban-cards"></div>
+                    </div>
+                    <div class="kanban-column" id="done">
+                        <div class="kanban-column-header">
+                            <div class="kanban-column-title">
+                                <span class="column-dot done"></span>
+                                Done
+                            </div>
+                            <span class="kanban-column-count">0</span>
+                        </div>
+                        <div class="kanban-cards"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Hot Topics -->
+        <section class="card hot-topics">
+            <div class="card-header">
+                <div class="card-title">
+                    <span class="card-title-icon">🔥</span>
+                    Hot Topics
+                </div>
+                <span class="card-badge">Trending</span>
+            </div>
+            <div class="card-content" id="hotTopics">
+                <!-- Topics injected here -->
+            </div>
+        </section>
+
+        <!-- Cost Tracking -->
+        <section class="card cost-tracking">
+            <div class="card-header">
+                <div class="card-title">
+                    <span class="card-title-icon">💰</span>
+                    Cost & Usage
+                </div>
+                <span class="card-badge">Today</span>
+            </div>
+            <div class="card-content">
+                <div class="cost-stat">
+                    <span class="cost-label">Today's Cost</span>
+                    <span class="cost-value" id="todayCost">$0.00</span>
+                </div>
+                <div class="cost-stat">
+                    <span class="cost-label">This Week</span>
+                    <span class="cost-value" id="weekCost">$0.00</span>
+                </div>
+                <div class="cost-stat">
+                    <span class="cost-label">This Month</span>
+                    <span class="cost-value highlight" id="monthCost">$0.00</span>
+                </div>
+                <div class="cost-stat">
+                    <span class="cost-label">Tokens Used</span>
+                    <span class="cost-value" id="tokensUsed">0</span>
+                </div>
+                <div class="cost-stat">
+                    <span class="cost-label">API Calls</span>
+                    <span class="cost-value" id="apiCalls">0</span>
+                </div>
+                <div class="usage-bar">
+                    <div class="usage-bar-label">
+                        <span>Budget Used</span>
+                        <span id="budgetPercent">0%</span>
+                    </div>
+                    <div class="usage-bar-track">
+                        <div class="usage-bar-fill" id="budgetFill" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Skills Status -->
+        <section class="card skills-status">
+            <div class="card-header">
+                <div class="card-title">
+                    <span class="card-title-icon">⚡</span>
+                    Skills Status
+                </div>
+                <span class="card-badge" id="skillsOnline">0 online</span>
+            </div>
+            <div class="card-content" id="skillsList">
+                <!-- Skills injected here -->
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // ==========================================
+        // Chad Dashboard v1 - Core Logic
+        // ==========================================
+
+        // Avatar states based on current activity
+        const avatarMoods = {
+            idle: { emoji: '🤖', animation: '', task: 'Monitoring...' },
+            thinking: { emoji: '🤔', animation: 'thinking', task: 'Thinking...' },
+            working: { emoji: '⚡', animation: 'working', task: 'Processing...' },
+            coding: { emoji: '👨‍💻', animation: 'working', task: 'Coding...' },
+            searching: { emoji: '🔍', animation: 'thinking', task: 'Searching...' },
+            chatting: { emoji: '💬', animation: '', task: 'Chatting...' },
+            celebrating: { emoji: '🎉', animation: 'celebrating', task: 'Task Complete!' },
+            sleeping: { emoji: '😴', animation: '', task: 'Idle' },
+            error: { emoji: '😵', animation: '', task: 'Error!' },
+            learning: { emoji: '📚', animation: 'thinking', task: 'Learning...' }
+        };
+
+        let currentMood = 'idle';
+        const moodKeys = Object.keys(avatarMoods);
+
+        // Sample data - in production, this would come from OpenClaw API
+        const sampleData = {
+            activities: [
+                { type: 'task', text: '<strong>Dashboard</strong> build task started', time: 'Just now' },
+                { type: 'agent', text: 'Sub-agent <strong>dashboard-build</strong> spawned', time: '2m ago' },
+                { type: 'complete', text: 'Completed <strong>email check</strong> routine', time: '15m ago' },
+                { type: 'task', text: 'Processing <strong>heartbeat</strong> check', time: '32m ago' },
+                { type: 'agent', text: 'Sub-agent <strong>research</strong> completed task', time: '1h ago' },
+                { type: 'complete', text: 'Calendar sync <strong>successful</strong>', time: '2h ago' }
+            ],
+            subagents: [
+                { name: 'dashboard-build', task: 'Building Chad Dashboard v1', status: 'working', avatar: '🏗️' },
+                { name: 'watcher', task: 'File system monitoring', status: 'active', avatar: '👀' }
+            ],
+            tasks: {
+                backlog: [
+                    { title: 'Add WebSocket support', tag: 'Feature', priority: '🟡' },
+                    { title: 'Mobile responsive fixes', tag: 'UI', priority: '🟢' },
+                    { title: 'Dark/Light theme toggle', tag: 'Feature', priority: '🟢' }
+                ],
+                inProgress: [
+                    { title: 'Chad Dashboard v1', tag: 'Build', priority: '🔴' },
+                    { title: 'Memory system refactor', tag: 'Core', priority: '🟡' }
+                ],
+                review: [
+                    { title: 'Heartbeat optimization', tag: 'Perf', priority: '🟡' }
+                ],
+                done: [
+                    { title: 'Setup workspace', tag: 'Init', priority: '🟢' },
+                    { title: 'SOUL.md created', tag: 'Config', priority: '🟢' },
+                    { title: 'Calendar integration', tag: 'Feature', priority: '🟢' }
+                ]
+            },
+            hotTopics: [
+                { title: 'AI Agent Development', mentions: 2.4, trend: '+12%', hot: true },
+                { title: 'OpenClaw Updates', mentions: 1.8, trend: '+8%', hot: true },
+                { title: 'Claude API Changes', mentions: 1.2, trend: '+5%', hot: false },
+                { title: 'Telegram Bot Features', mentions: 0.9, trend: '-2%', hot: false },
+                { title: 'Home Automation', mentions: 0.6, trend: '+3%', hot: false }
+            ],
+            costs: {
+                today: 2.47,
+                week: 18.32,
+                month: 67.89,
+                tokens: 1247832,
+                apiCalls: 342,
+                budget: 100,
+                used: 67.89
+            },
+            skills: [
+                { name: 'Web Search', desc: 'Brave API', icon: '🔍', status: 'online' },
+                { name: 'Browser Control', desc: 'Playwright', icon: '🌐', status: 'online' },
+                { name: 'File System', desc: 'Read/Write/Edit', icon: '📁', status: 'online' },
+                { name: 'Shell Exec', desc: 'Command runner', icon: '💻', status: 'online' },
+                { name: 'TTS', desc: 'ElevenLabs', icon: '🎙️', status: 'online' },
+                { name: 'Calendar', desc: 'Google Calendar', icon: '📅', status: 'online' },
+                { name: 'Email', desc: 'Gmail IMAP', icon: '📧', status: 'loading' },
+                { name: 'Vision', desc: 'Image analysis', icon: '👁️', status: 'online' }
+            ]
+        };
+
+        // Update time display
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('timeDisplay').textContent = 
+                now.toLocaleTimeString('en-US', { hour12: false });
+        }
+
+        // Render activity feed
+        function renderActivities() {
+            const feed = document.getElementById('activityFeed');
+            const activities = sampleData.activities;
+            
+            feed.innerHTML = activities.map(a => `
+                <div class="activity-item">
+                    <div class="activity-icon ${a.type}">
+                        ${a.type === 'task' ? '📌' : a.type === 'agent' ? '🤖' : a.type === 'complete' ? '✅' : '❌'}
+                    </div>
+                    <div class="activity-content">
+                        <div class="activity-text">${a.text}</div>
+                        <div class="activity-time">${a.time}</div>
+                    </div>
+                </div>
+            `).join('');
+            
+            document.getElementById('activityCount').textContent = `${activities.length} events`;
+        }
+
+        // Render sub-agents
+        function renderSubagents() {
+            const list = document.getElementById('subagentsList');
+            const agents = sampleData.subagents;
+            
+            list.innerHTML = agents.map(a => `
+                <div class="subagent-item">
+                    <span class="subagent-avatar">${a.avatar}</span>
+                    <div class="subagent-info">
+                        <div class="subagent-name">${a.name}</div>
+                        <div class="subagent-task">${a.task}</div>
+                    </div>
+                    <span class="subagent-status ${a.status}">${a.status}</span>
+                </div>
+            `).join('');
+        }
+
+        // Render kanban board
+        function renderKanban() {
+            const columns = ['backlog', 'inProgress', 'review', 'done'];
+            let totalTasks = 0;
+            
+            columns.forEach(col => {
+                const column = document.getElementById(col);
+                const tasks = sampleData.tasks[col] || [];
+                totalTasks += tasks.length;
+                
+                column.querySelector('.kanban-column-count').textContent = tasks.length;
+                column.querySelector('.kanban-cards').innerHTML = tasks.map(t => `
+                    <div class="kanban-card" draggable="true">
+                        <div class="kanban-card-title">${t.title}</div>
+                        <div class="kanban-card-meta">
+                            <span class="kanban-card-tag">${t.tag}</span>
+                            <span class="kanban-card-priority">${t.priority}</span>
+                        </div>
+                    </div>
+                `).join('');
+            });
+            
+            document.getElementById('totalTasks').textContent = `${totalTasks} tasks`;
+        }
+
+        // Render hot topics
+        function renderHotTopics() {
+            const container = document.getElementById('hotTopics');
+            const topics = sampleData.hotTopics;
+            
+            container.innerHTML = topics.map((t, i) => `
+                <div class="topic-item">
+                    <div class="topic-rank ${t.hot ? 'hot' : ''}">${i + 1}</div>
+                    <div class="topic-content">
+                        <div class="topic-title">${t.title}</div>
+                        <div class="topic-meta">
+                            <span>${t.mentions}k mentions</span>
+                            <span class="topic-trend ${t.trend.startsWith('-') ? 'down' : ''}">${t.trend}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Render cost tracking
+        function renderCosts() {
+            const c = sampleData.costs;
+            document.getElementById('todayCost').textContent = `$${c.today.toFixed(2)}`;
+            document.getElementById('weekCost').textContent = `$${c.week.toFixed(2)}`;
+            document.getElementById('monthCost').textContent = `$${c.month.toFixed(2)}`;
+            document.getElementById('tokensUsed').textContent = c.tokens.toLocaleString();
+            document.getElementById('apiCalls').textContent = c.apiCalls.toLocaleString();
+            
+            const percent = Math.round((c.used / c.budget) * 100);
+            document.getElementById('budgetPercent').textContent = `${percent}%`;
+            document.getElementById('budgetFill').style.width = `${percent}%`;
+        }
+
+        // Render skills
+        function renderSkills() {
+            const container = document.getElementById('skillsList');
+            const skills = sampleData.skills;
+            const online = skills.filter(s => s.status === 'online').length;
+            
+            document.getElementById('skillsOnline').textContent = `${online} online`;
+            
+            container.innerHTML = skills.map(s => `
+                <div class="skill-item">
+                    <span class="skill-icon">${s.icon}</span>
+                    <div class="skill-info">
+                        <div class="skill-name">${s.name}</div>
+                        <div class="skill-desc">${s.desc}</div>
+                    </div>
+                    <div class="skill-status ${s.status}"></div>
+                </div>
+            `).join('');
+        }
+
+        // Avatar mood cycling (click to change)
+        function cycleMood() {
+            const currentIndex = moodKeys.indexOf(currentMood);
+            currentMood = moodKeys[(currentIndex + 1) % moodKeys.length];
+            updateAvatar();
+        }
+
+        function updateAvatar() {
+            const avatar = document.getElementById('chadAvatar');
+            const mood = avatarMoods[currentMood];
+            
+            avatar.textContent = mood.emoji;
+            avatar.className = 'avatar ' + mood.animation;
+            document.getElementById('currentTask').textContent = mood.task;
+        }
+
+        // Random mood changes (simulating activity)
+        function randomMoodChange() {
+            const activeMoods = ['working', 'thinking', 'coding', 'searching', 'idle'];
+            currentMood = activeMoods[Math.floor(Math.random() * activeMoods.length)];
+            updateAvatar();
+        }
+
+        // Add new activity (for simulation)
+        function addActivity(type, text) {
+            sampleData.activities.unshift({
+                type,
+                text,
+                time: 'Just now'
+            });
+            if (sampleData.activities.length > 10) {
+                sampleData.activities.pop();
+            }
+            renderActivities();
+        }
+
+        // Initialize
+        function init() {
+            updateTime();
+            setInterval(updateTime, 1000);
+            
+            renderActivities();
+            renderSubagents();
+            renderKanban();
+            renderHotTopics();
+            renderCosts();
+            renderSkills();
+            updateAvatar();
+            
+            // Click avatar to cycle moods
+            document.getElementById('chadAvatar').addEventListener('click', cycleMood);
+            
+            // Simulate random activity
+            setInterval(randomMoodChange, 10000);
+            
+            // Simulate new activity every 30s
+            setInterval(() => {
+                const activities = [
+                    { type: 'task', text: '<strong>Heartbeat</strong> check completed' },
+                    { type: 'complete', text: 'Memory file <strong>updated</strong>' },
+                    { type: 'agent', text: 'Sub-agent task <strong>progressing</strong>' }
+                ];
+                const random = activities[Math.floor(Math.random() * activities.length)];
+                addActivity(random.type, random.text);
+            }, 30000);
+        }
+
+        // Start when DOM ready
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
